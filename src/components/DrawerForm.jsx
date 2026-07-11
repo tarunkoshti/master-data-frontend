@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { X } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { X, ChevronDown } from 'lucide-react';
+import { useForm, Controller } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import FormInput from './FormInput';
 import Button from './Button';
+import CustomSelect from './CustomSelect';
 import { masterDataApi } from '../services/masterData.service';
 
-export default function DrawerForm({ isOpen, onClose, category, type, editData, onSuccess }) {
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+export default function DrawerForm({ isOpen, onClose, category, type, editData, onSuccess, parentOptions = [] }) {
+  const { register, handleSubmit, reset, setValue, control, formState: { errors } } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // When drawer opens or editData changes, reset form with appropriate values
@@ -16,6 +17,7 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
       reset({
         name: editData?.name || '',
         value: editData?.value || '',
+        parent_id: editData?.parent_id || '',
         status: editData?.is_active === false ? 'inactive' : 'active',
       });
     }
@@ -31,8 +33,7 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
         value: data.value,
         category: category,
         type: type,
-        // Optional parent ID handling can go here later
-        // parent_id: data.parent_id || null, 
+        parent_id: data.parent_id ? parseInt(data.parent_id) : null,
       };
 
       // Since status is often updated separately via patch, you might update it in the body 
@@ -131,7 +132,35 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
                 })}
                 error={errors.value?.message}
               />
-              {/* Optional: Add parent_id dropdown here later if needed */}
+              
+              {parentOptions.length > 0 && (
+                <div className="flex flex-col space-y-1.5 w-full">
+                  <label htmlFor="parent_id" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Select {type === 'state' ? 'Country' : type === 'city' ? 'State' : 'Parent'}
+                    <span className="text-rose-500 ml-1 font-bold">*</span>
+                  </label>
+                  <Controller
+                    name="parent_id"
+                    control={control}
+                    rules={{ required: 'Selection is required' }}
+                    render={({ field }) => (
+                      <CustomSelect
+                        id="parent_id"
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={errors.parent_id?.message}
+                        placeholder={`Choose a ${type === 'state' ? 'country' : type === 'city' ? 'state' : 'parent'}...`}
+                        options={parentOptions.map(opt => ({ value: opt.id, label: opt.name }))}
+                      />
+                    )}
+                  />
+                  {errors.parent_id && (
+                    <span className="text-xs text-rose-600 font-medium tracking-wide">
+                      {errors.parent_id.message}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Footer */}

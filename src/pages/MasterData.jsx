@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { masterDataApi } from '../services/masterData.service';
 import DrawerForm from '../components/DrawerForm';
@@ -120,6 +120,66 @@ export default function MasterData() {
     }
   };
 
+  const columns = useMemo(
+    () => [
+      {
+        id: 'drag',
+        header: '',
+        cell: () => null, 
+      },
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: (info) => <span className="font-medium text-slate-800">{info.getValue()}</span>,
+      },
+      /*
+      {
+        accessorKey: 'parent_id',
+        header: 'Parent',
+        cell: (info) => {
+          const parent = info.getValue();
+          return parent ? <span className="px-2 py-1 bg-slate-100 rounded text-xs">{parent.name || parent}</span> : <span className="text-slate-300">-</span>;
+        },
+      },
+      */
+      {
+        accessorKey: 'is_active',
+        header: 'Status',
+        cell: (info) => {
+          const isActive = info.getValue();
+          return (
+            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+              isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
+            }`}>
+              {isActive ? 'Active' : 'Inactive'}
+            </span>
+          );
+        },
+      },
+      {
+        accessorKey: 'created_at',
+        header: 'Created',
+        cell: (info) => {
+          const val = info.getValue();
+          if (!val) return <span className="text-sm text-slate-400">-</span>;
+          const date = new Date(val);
+          if (isNaN(date.getTime())) return <span className="text-sm text-slate-400">-</span>;
+          return (
+            <span className="text-sm text-slate-600">
+              {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+          );
+        },
+      },
+      {
+        id: 'actions',
+        header: '',
+        cell: () => null,
+      },
+    ],
+    []
+  );
+
   return (
     <div className="animate-in fade-in duration-300 h-full flex flex-col">
       <div className="mb-6 flex items-center justify-between">
@@ -220,6 +280,7 @@ export default function MasterData() {
             ) : (
               <MasterTable 
                 data={displayData} 
+                columns={columns}
                 onDataChange={handleDataChange}
                 onSaveOrder={handleSaveOrder}
                 onEdit={handleEdit}
@@ -241,6 +302,11 @@ export default function MasterData() {
         type={activeType.value} 
         editData={editItem}
         onSuccess={fetchMasterData}
+        parentOptions={
+          activeType.value === 'state' ? allCategoryData.filter(i => i.type === 'country') :
+          activeType.value === 'city' ? allCategoryData.filter(i => i.type === 'state') :
+          []
+        }
       />
 
       <ConfirmModal
