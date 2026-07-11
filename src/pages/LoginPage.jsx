@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { User, Lock, LogIn, ShieldCheck } from 'lucide-react';
+import { User, Lock, LogIn } from 'lucide-react';
 import FormInput from '../components/FormInput';
 import Button from '../components/Button';
 import { useAuth } from '../context/AuthContext';
@@ -49,9 +49,7 @@ export default function LoginPage() {
       <div className="max-w-md w-full animate-scale-in">
         {/* Header */}
         <div className="flex flex-col items-center mb-8 space-y-3">
-          <div className="bg-primary-50 border border-primary-100 p-3 rounded-2xl text-primary-500 shadow-sm">
-            <ShieldCheck className="w-8 h-8" strokeWidth={1.5} />
-          </div>
+
           <h1 className="text-2xl font-bold text-[#002a43] tracking-widest uppercase text-center">
             Master Data Management
           </h1>

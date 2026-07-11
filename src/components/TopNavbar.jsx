@@ -7,21 +7,21 @@ export default function TopNavbar({ onMenuClick }) {
 
   return (
     <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 sm:px-6 shrink-0 relative z-10">
-      <div className="flex items-center flex-1 max-w-lg gap-4">
+      <div className="flex items-center flex-1 max-w-lg gap-2 sm:gap-4">
         {/* Mobile Menu Button */}
         <button 
           onClick={onMenuClick}
-          className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
+          className="md:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
         >
           <Menu className="w-5 h-5" />
         </button>
         
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Search className="w-4 h-4 absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             type="text"
-            placeholder="Search across dashboard..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors"
+            placeholder="Search..."
+            className="w-full pl-8 sm:pl-9 pr-3 sm:pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white transition-colors"
           />
         </div>
       </div>

@@ -189,10 +189,10 @@ export default function MasterData() {
         </div>
       </div>
       
-      <div className="flex-1 flex gap-6 min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0">
         {/* Left Panel: Categories */}
-        <div className="w-64 flex-shrink-0 flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-slate-200 bg-slate-50">
+        <div className="w-full md:w-64 flex-shrink-0 flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm max-h-[35vh] md:max-h-full">
+          <div className="p-3 md:p-4 border-b border-slate-200 bg-slate-50 shrink-0">
             <h2 className="font-semibold text-slate-700">Categories</h2>
           </div>
           <div className="flex-1 overflow-y-auto p-2">
@@ -241,9 +241,9 @@ export default function MasterData() {
         </div>
 
         {/* Right Panel: Data Table */}
-        <div className="flex-1 flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-           <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="flex-1 flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm min-h-[50vh] md:min-h-0">
+           <div className="p-3 md:p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
               <h2 className="font-semibold text-slate-700">{activeType.name}</h2>
               {hasOrderChanged && (
                 <button
