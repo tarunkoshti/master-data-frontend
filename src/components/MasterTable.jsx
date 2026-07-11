@@ -11,6 +11,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -58,7 +59,7 @@ const SortableRow = ({ row, onEdit, onToggleStatus, onDelete, isDragEnabled }) =
                 {...attributes}
                 {...listeners}
                 disabled={!isDragEnabled}
-                className={`p-1 ${isDragEnabled ? 'hover:text-slate-700 cursor-grab active:cursor-grabbing' : 'opacity-30 cursor-not-allowed'}`}
+                className={`p-1 touch-none ${isDragEnabled ? 'hover:text-slate-700 cursor-grab active:cursor-grabbing' : 'opacity-30 cursor-not-allowed'}`}
                 title={!isDragEnabled ? "Clear sort/search to reorder" : "Drag to reorder"}
               >
                 <GripVertical className="w-5 h-5" />
@@ -126,6 +127,12 @@ export default function MasterTable({
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 5,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
