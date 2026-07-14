@@ -8,12 +8,12 @@ export const masterDataApi = {
 
   // Get by category
   getByCategory: (category, params = {}) => {
-    return apiClient.get(`/master-data/${category}`, { params });
+    return apiClient.get('/master-data', { params: { ...params, category } });
   },
   
   // Get by parent ID
   getByParentId: (parentId, params = {}) => {
-    return apiClient.get(`/master-data/parent/${parentId}`, { params });
+    return apiClient.get('/master-data', { params: { ...params, parent_id: parentId } });
   },
 
   // Create new master data

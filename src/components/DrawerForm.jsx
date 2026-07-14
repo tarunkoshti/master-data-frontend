@@ -36,10 +36,6 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
         parent_id: data.parent_id ? parseInt(data.parent_id) : null,
       };
 
-      // Since status is often updated separately via patch, you might update it in the body 
-      // or handle it according to backend. (Assume backend accepts it or ignores it)
-      // Actually backend create/update doesn't accept is_active, only patch does.
-
       if (editData) {
         await masterDataApi.update(editData.id, payload);
         toast.success('Updated successfully', { id: toastId });
@@ -132,7 +128,7 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
                 })}
                 error={errors.value?.message}
               />
-              
+
               {parentOptions.length > 0 && (
                 <div className="flex flex-col space-y-1.5 w-full">
                   <label htmlFor="parent_id" className="text-xs font-semibold uppercase tracking-wider text-slate-500">

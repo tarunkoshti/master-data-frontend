@@ -71,28 +71,28 @@ const SortableRow = ({ row, onEdit, onToggleStatus, onDelete, isDragEnabled }) =
         if (cell.column.id === 'actions') {
           return (
              <td key={cell.id} className="p-3 w-32">
-                <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button 
-                      onClick={() => onEdit(row.original)}
-                      className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-md transition-colors"
-                      title="Edit"
-                    >
-                      <Edit className="w-4 h-4" />
-                   </button>
+                <div className="flex items-center justify-end gap-2">
                    <button 
                       onClick={() => onToggleStatus(row.original)}
                       className={`p-1.5 rounded-md transition-colors ${
                         row.original.is_active 
-                          ? 'text-slate-400 hover:text-amber-600 hover:bg-amber-50'
-                          : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
+                          ? 'text-amber-600 hover:text-amber-700 hover:bg-amber-50'
+                          : 'text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50'
                       }`}
                       title={row.original.is_active ? 'Disable' : 'Enable'}
                     >
                       {row.original.is_active ? <XCircle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
                    </button>
                    <button 
+                      onClick={() => onEdit(row.original)}
+                      className="p-1.5 text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-md transition-colors"
+                      title="Edit"
+                    >
+                      <Edit className="w-4 h-4" />
+                   </button>
+                   <button 
                       onClick={() => onDelete(row.original)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
+                      className="p-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-md transition-colors"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />

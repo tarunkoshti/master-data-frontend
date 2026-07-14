@@ -173,7 +173,7 @@ export default function MasterData() {
       },
       {
         id: 'actions',
-        header: '',
+        header: 'Actions',
         cell: () => null,
       },
     ],

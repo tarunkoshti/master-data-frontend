@@ -9,15 +9,17 @@ import { useAuth } from '../context/AuthContext';
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
-    if (!username.trim()) {
-      newErrors.username = 'Username is required';
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
     }
     if (!password) {
       newErrors.password = 'Password is required';
@@ -33,7 +35,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
     const toastId = toast.loading('Signing in...');
     try {
-      await login(username, password);
+      await login(email, password);
       toast.success('Signed in successfully!', { id: toastId });
       navigate('/dashboard', { replace: true });
     } catch (err) {
@@ -62,18 +64,18 @@ export default function LoginPage() {
         <div className="light-panel rounded-2xl p-8 relative overflow-hidden">
           <form onSubmit={handleSubmit} className="space-y-6">
             <FormInput
-              label="Username"
-              id="username"
-              type="text"
-              placeholder="Enter admin username"
-              value={username}
+              label="Email"
+              id="email"
+              type="email"
+              placeholder="Enter your admin email"
+              value={email}
               onChange={(e) => {
-                setUsername(e.target.value);
-                if (errors.username) {
-                  setErrors((prev) => ({ ...prev, username: '' }));
+                setEmail(e.target.value);
+                if (errors.email) {
+                  setErrors((prev) => ({ ...prev, email: '' }));
                 }
               }}
-              error={errors.username}
+              error={errors.email}
               required
               icon={User}
             />
