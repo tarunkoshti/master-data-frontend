@@ -37,7 +37,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       toast.success('Signed in successfully!', { id: toastId });
-      navigate('/dashboard', { replace: true });
+      navigate('/', { replace: true });
     } catch (err) {
       const msg = err.response?.data?.message || 'Authentication failed. Please check credentials.';
       toast.error(msg, { id: toastId });

@@ -3,53 +3,53 @@ export const MASTER_DATA_CATEGORIES = [
     name: 'Personal Details',
     value: 'personal-details',
     types: [
-      { name: 'Gender', value: 'gender' },
-      { name: 'Marital Status', value: 'marital-status' },
-      { name: 'Complexion', value: 'complexion' },
-      { name: 'Height', value: 'height' },
-      { name: 'Diet', value: 'diet' },
-      { name: 'Disability', value: 'disability' },
-      { name: 'Blood Group', value: 'blood-group' },
-      { name: 'Profile Created By', value: 'profile-created-by' },
+      { name: 'Genders', value: 'genders' },
+      { name: 'Marital Status', value: 'marital_status' },
+      { name: 'Complexions', value: 'complexions' },
+      { name: 'Heights', value: 'heights' },
+      { name: 'Diets', value: 'diets' },
+      { name: 'Disabilities', value: 'disabilities' },
+      { name: 'Blood Groups', value: 'blood_groups' },
     ]
   },
   {
     name: 'Location',
     value: 'location',
     types: [
-      { name: 'Country', value: 'country' },
-      { name: 'State', value: 'state' },
-      { name: 'City', value: 'city' },
+      { name: 'Countries', value: 'countries' },
+      { name: 'States', value: 'states' },
+      { name: 'Cities', value: 'cities' },
     ]
   },
   {
     name: 'Religious & Horoscope',
     value: 'religious-horoscope',
     types: [
-      { name: 'Mother Tongue', value: 'mother-tongue' },
-      { name: 'Zodiac (Rashi)', value: 'zodiac' },
-      { name: 'Manglik', value: 'manglik' },
-      { name: 'Nakshatra', value: 'nakshatra' },
+      { name: 'Mother Tongues', value: 'mother_tongues' },
+      { name: 'Zodiacs (Rashi)', value: 'zodiacs' },
+      { name: 'Manglik Status', value: 'manglik_status' },
+      { name: 'Nakshatras', value: 'nakshatras' },
+      { name: 'Gotras', value: 'gotras' },
+      { name: 'Subcastes', value: 'subcastes' },
     ]
   },
   {
     name: 'Education & Career',
     value: 'education-career',
     types: [
-      { name: 'Education', value: 'education' },
-      { name: 'Occupation', value: 'occupation' },
-      { name: 'Profession', value: 'profession' },
-      { name: 'Annual Income', value: 'annual-income' },
+      { name: 'Educations', value: 'educations' },
+      { name: 'Occupations', value: 'occupations' },
+      { name: 'Professions', value: 'professions' },
+      { name: 'Annual Incomes', value: 'annual_incomes' },
     ]
   },
   {
     name: 'Family & Assets',
     value: 'family-assets',
     types: [
-      { name: 'Father Occupation', value: 'father-occupation' },
-      { name: 'Mother Occupation', value: 'mother-occupation' },
       { name: 'House', value: 'house' },
       { name: 'Car', value: 'car' },
+      { name: 'Relations', value: 'relations' },
     ]
   }
 ];

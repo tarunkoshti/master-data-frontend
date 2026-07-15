@@ -1,16 +1,12 @@
 import apiClient from './api';
 
 export const masterDataApi = {
-  // Get all master data (with optional query filters like is_active)
-  getAll: (params = {}) => {
-    return apiClient.get('/master-data', { params });
+
+  // Get by type
+  getByType: (type, params = {}) => {
+    return apiClient.get('/master-data', { params: { ...params, type } });
   },
 
-  // Get by category
-  getByCategory: (category, params = {}) => {
-    return apiClient.get('/master-data', { params: { ...params, category } });
-  },
-  
   // Get by parent ID
   getByParentId: (parentId, params = {}) => {
     return apiClient.get('/master-data', { params: { ...params, parent_id: parentId } });
@@ -26,18 +22,8 @@ export const masterDataApi = {
     return apiClient.put(`/master-data/${id}`, data);
   },
 
-  // Update status (enable/disable)
-  updateStatus: (id, is_active) => {
-    return apiClient.patch(`/master-data/${id}/status`, { is_active });
-  },
-
   // Delete master data
-  delete: (id) => {
-    return apiClient.delete(`/master-data/${id}`);
-  },
-
-  // Reorder master data
-  reorder: (type, ids) => {
-    return apiClient.patch(`/master-data/${type}/reorder`, { ids });
-  },
+  // delete: (id, type) => {
+  //   return apiClient.delete(`/master-data/${id}`, { params: { type } });
+  // },
 };

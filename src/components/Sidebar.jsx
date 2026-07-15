@@ -1,20 +1,16 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Database, ShieldCheck, LogOut, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { Database, ShieldCheck, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { MASTER_DATA_CATEGORIES } from '../constants/masterData';
 
 export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
-  const { logout, user } = useAuth();
+  const location = useLocation();
+  const { user } = useAuth();
+  const [isMasterDataOpen, setIsMasterDataOpen] = useState(true);
+  const [expandedCategories, setExpandedCategories] = useState([MASTER_DATA_CATEGORIES[0].name]);
 
-  const menuItems = [
-    { name: 'Master Data', path: '/dashboard/master-data', icon: Database },
-  ];
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
 
   return (
     <aside
@@ -42,34 +38,70 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* Navigation */}
       <div className="flex-1 py-4 flex flex-col gap-1 px-3 overflow-y-auto">
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            end={item.path === '/dashboard'}
-            className={({ isActive }) =>
-              `flex items-center px-3 py-2.5 rounded-lg font-medium transition-colors ${isActive
-                ? 'bg-primary-50 text-primary-600'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`
-            }
-          >
-            <item.icon className="w-5 h-5 mr-3" />
-            {item.name}
-          </NavLink>
-        ))}
-      </div>
-
-      {/* Logout */}
-      <div className="p-4 border-t border-slate-200 bg-slate-50/50">
         <button
-          onClick={handleLogout}
-          className="flex items-center w-full px-3 py-2.5 text-slate-600 hover:bg-rose-50 hover:text-rose-600 rounded-lg font-medium transition-colors"
+          onClick={() => setIsMasterDataOpen(!isMasterDataOpen)}
+          className={`flex items-center justify-between w-full px-3 py-2.5 rounded-lg font-medium transition-colors ${isMasterDataOpen ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+            }`}
         >
-          <LogOut className="w-5 h-5 mr-3" />
-          Logout
+          <div className="flex items-center">
+            <Database className="w-5 h-5 mr-3" />
+            Master Data
+          </div>
+          {isMasterDataOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         </button>
+
+        {isMasterDataOpen && (
+          <div className="mt-1 ml-4 pl-2 border-l-2 border-slate-100 space-y-1">
+            {MASTER_DATA_CATEGORIES.map(category => {
+              const isExpanded = expandedCategories.includes(category.name);
+              return (
+                <div key={category.name} className="mb-1">
+                  <button
+                    onClick={() => {
+                      if (isExpanded) {
+                        setExpandedCategories(expandedCategories.filter(c => c !== category.name));
+                      } else {
+                        setExpandedCategories([...expandedCategories, category.name]);
+                      }
+                    }}
+                    className="w-full flex items-center justify-between p-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors"
+                  >
+                    <span>{category.name}</span>
+                    {isExpanded ? <ChevronDown className="w-3 h-3 text-slate-400" /> : <ChevronRight className="w-3 h-3 text-slate-400" />}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="mt-1 ml-2 pl-2 border-l-2 border-slate-50 space-y-1">
+                      {category.types.map(type => {
+                        // The URL path will be just /type.value
+                        const path = `/${type.value}`;
+                        const isActive = location.pathname === path || (location.pathname === '/' && type.value === 'genders');
+
+                        return (
+                          <NavLink
+                            key={type.value}
+                            to={path}
+                            onClick={() => {
+                              if (window.innerWidth < 768) onClose();
+                            }}
+                            className={`block p-2 rounded-lg text-sm font-medium transition-colors ${isActive
+                                ? 'bg-primary-50 text-primary-600'
+                                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                              }`}
+                          >
+                            {type.name}
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </aside>
   );
 }
+

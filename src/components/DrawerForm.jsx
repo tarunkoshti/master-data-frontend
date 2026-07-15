@@ -7,7 +7,7 @@ import Button from './Button';
 import CustomSelect from './CustomSelect';
 import { masterDataApi } from '../services/masterData.service';
 
-export default function DrawerForm({ isOpen, onClose, category, type, editData, onSuccess, parentOptions = [] }) {
+export default function DrawerForm({ isOpen, onClose, type, editData, onSuccess, parentOptions = [], defaultParentId = '' }) {
   const { register, handleSubmit, reset, setValue, control, formState: { errors } } = useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -17,11 +17,11 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
       reset({
         name: editData?.name || '',
         value: editData?.value || '',
-        parent_id: editData?.parent_id || '',
+        parent_id: editData?.parent_id || editData?.country_id || editData?.state_id || defaultParentId,
         status: editData?.is_active === false ? 'inactive' : 'active',
       });
     }
-  }, [isOpen, editData, reset]);
+  }, [isOpen, editData, reset, defaultParentId]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -31,7 +31,6 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
       const payload = {
         name: data.name,
         value: data.value,
-        category: category,
         type: type,
         parent_id: data.parent_id ? parseInt(data.parent_id) : null,
       };
@@ -84,13 +83,6 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
           <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col">
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <FormInput
-                label="Category"
-                id="category"
-                value={category}
-                readOnly
-                className="opacity-70 bg-slate-50 cursor-not-allowed"
-              />
-              <FormInput
                 label="Type"
                 id="type"
                 value={type}
@@ -103,36 +95,15 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
                 placeholder="Enter display name"
                 required
                 {...register('name', {
-                  required: 'Name is required',
-                  onChange: (e) => {
-                    // Only auto-fill if adding new, or if they explicitly want to edit it
-                    // To keep it simple, auto-fill the slug format
-                    if (!editData) {
-                      setValue('value', e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
-                    }
-                  }
+                  required: 'Name is required'
                 })}
                 error={errors.name?.message}
-              />
-              <FormInput
-                label="Value"
-                id="value"
-                placeholder="enter-unique-value"
-                required
-                {...register('value', {
-                  required: 'Value is required',
-                  pattern: {
-                    value: /^[a-z0-9-]+$/,
-                    message: 'Value can only contain lowercase letters, numbers, and hyphens'
-                  }
-                })}
-                error={errors.value?.message}
               />
 
               {parentOptions.length > 0 && (
                 <div className="flex flex-col space-y-1.5 w-full">
                   <label htmlFor="parent_id" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Select {type === 'state' ? 'Country' : type === 'city' ? 'State' : 'Parent'}
+                    Select {type === 'states' ? 'Country' : type === 'cities' ? 'State' : 'Parent'}
                     <span className="text-rose-500 ml-1 font-bold">*</span>
                   </label>
                   <Controller
@@ -145,7 +116,7 @@ export default function DrawerForm({ isOpen, onClose, category, type, editData, 
                         value={field.value}
                         onChange={field.onChange}
                         error={errors.parent_id?.message}
-                        placeholder={`Choose a ${type === 'state' ? 'country' : type === 'city' ? 'state' : 'parent'}...`}
+                        placeholder={`Choose a ${type === 'states' ? 'country' : type === 'cities' ? 'state' : 'parent'}...`}
                         options={parentOptions.map(opt => ({ value: opt.id, label: opt.name }))}
                       />
                     )}

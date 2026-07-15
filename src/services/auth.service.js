@@ -11,5 +11,9 @@ export const authService = {
 
   getMe: () => {
     return apiClient.get('/auth/me');
+  },
+
+  changePassword: (data) => {
+    return apiClient.post('/auth/change-password', data);
   }
 };

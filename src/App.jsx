@@ -10,19 +10,19 @@ import MasterData from './pages/MasterData';
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/master-admin">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
-          
+
           {/* Protected Dashboard Routes */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<Navigate to="master-data" replace />} />
-              <Route path="master-data" element={<MasterData />} />
+            <Route path="/" element={<DashboardLayout />}>
+              <Route index element={<MasterData />} />
+              <Route path=":type" element={<MasterData />} />
             </Route>
           </Route>
-          
-          <Route path="*" element={<Navigate to="/login" replace />} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <Toaster
           position="top-right"

@@ -1,39 +1,90 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import toast from 'react-hot-toast';
+import { useParams } from 'react-router-dom';
 import { masterDataApi } from '../services/masterData.service';
 import DrawerForm from '../components/DrawerForm';
 import MasterTable from '../components/MasterTable';
 import ConfirmModal from '../components/ConfirmModal';
-import { Loader2, Save, ChevronDown, ChevronRight } from 'lucide-react';
+import CustomSelect from '../components/CustomSelect';
+import { Loader2, Search } from 'lucide-react';
 import { MASTER_DATA_CATEGORIES } from '../constants/masterData';
 
 export default function MasterData() {
+  const { type } = useParams();
+  
+  const activeTypeInfo = useMemo(() => {
+    const defaultType = 'genders';
+    const targetType = type || defaultType;
+    for (const cat of MASTER_DATA_CATEGORIES) {
+      const foundType = cat.types.find(t => t.value === targetType);
+      if (foundType) return { category: cat, type: foundType };
+    }
+    return { category: MASTER_DATA_CATEGORIES[0], type: MASTER_DATA_CATEGORIES[0].types[0] };
+  }, [type]);
+
+  const activeType = activeTypeInfo.type;
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [activeCategory, setActiveCategory] = useState(MASTER_DATA_CATEGORIES[0]);
-  const [activeType, setActiveType] = useState(MASTER_DATA_CATEGORIES[0].types[0]);
-  const [expandedCategories, setExpandedCategories] = useState([MASTER_DATA_CATEGORIES[0].name]);
   
-  const [allCategoryData, setAllCategoryData] = useState([]);
+  const [displayData, setDisplayData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Reordering state
-  const [hasOrderChanged, setHasOrderChanged] = useState(false);
-  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [globalFilter, setGlobalFilter] = useState('');
 
-  // Map category to a specific type string if required by the API.
-  // For now, let's assume the API groups by category.
+  const [selectedCountryId, setSelectedCountryId] = useState('');
+  const [selectedStateId, setSelectedStateId] = useState('');
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+
+  // Reset filters when type changes
+  useEffect(() => {
+    setSelectedCountryId('');
+    setSelectedStateId('');
+    setGlobalFilter('');
+  }, [activeType.value]);
+
+  // Fetch parent filters (Countries and States)
+  useEffect(() => {
+    if (activeType.value === 'states' || activeType.value === 'cities') {
+      masterDataApi.getByType('countries').then(res => setCountries(res.data || []));
+    }
+  }, [activeType.value]);
+
+  useEffect(() => {
+    if (activeType.value === 'cities' && selectedCountryId) {
+      masterDataApi.getByType('states', { parent_id: selectedCountryId }).then(res => {
+        setStates(res.data || []);
+        setSelectedStateId(''); // Reset state when country changes
+      });
+    } else if (activeType.value === 'cities') {
+      setStates([]);
+      setSelectedStateId('');
+    }
+  }, [selectedCountryId, activeType.value]);
+
   const fetchMasterData = useCallback(async () => {
+    if (activeType.value === 'states' && !selectedCountryId) {
+      setDisplayData([]);
+      return;
+    }
+    if (activeType.value === 'cities' && !selectedStateId) {
+      setDisplayData([]);
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const response = await masterDataApi.getByCategory(activeCategory.value);
-      setAllCategoryData(response.data || []);
-      setHasOrderChanged(false);
+      const params = {};
+      if (activeType.value === 'states') params.parent_id = selectedCountryId;
+      if (activeType.value === 'cities') params.parent_id = selectedStateId;
+
+      const response = await masterDataApi.getByType(activeType.value, params);
+      setDisplayData(response.data || []);
     } catch (error) {
       if (error.response?.status === 404) {
-        setAllCategoryData([]);
+        setDisplayData([]);
       } else {
         const msg = error.response?.data?.message || 'Failed to load master data';
         toast.error(msg);
@@ -41,47 +92,32 @@ export default function MasterData() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeCategory]);
-  
-  // Filter data by active type
-  const displayData = allCategoryData
-    .filter(item => item.type === activeType.value);
+  }, [activeType.value, selectedCountryId, selectedStateId]);
 
   useEffect(() => {
     fetchMasterData();
   }, [fetchMasterData]);
 
-  const handleToggleStatus = async (row) => {
-    const toastId = toast.loading('Updating status...');
-    try {
-      await masterDataApi.updateStatus(row.id, row.is_active ? 0 : 1);
-      toast.success('Status updated', { id: toastId });
-      fetchMasterData();
-    } catch (error) {
-      toast.error('Failed to update status', { id: toastId });
-    }
-  };
+  // const handleDeleteClick = (row) => {
+  //   setDeleteItem(row);
+  // };
 
-  const handleDeleteClick = (row) => {
-    setDeleteItem(row);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteItem) return;
-    
-    setIsDeleting(true);
-    const toastId = toast.loading('Deleting...');
-    try {
-      await masterDataApi.delete(deleteItem.id);
-      toast.success('Deleted successfully', { id: toastId });
-      setDeleteItem(null);
-      fetchMasterData();
-    } catch (error) {
-      toast.error('Failed to delete', { id: toastId });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  // const handleConfirmDelete = async () => {
+  //   if (!deleteItem) return;
+  //   
+  //   setIsDeleting(true);
+  //   const toastId = toast.loading('Deleting...');
+  //   try {
+  //     await masterDataApi.delete(deleteItem.id, activeType.value);
+  //     toast.success('Deleted successfully', { id: toastId });
+  //     setDeleteItem(null);
+  //     fetchMasterData();
+  //   } catch (error) {
+  //     toast.error('Failed to delete', { id: toastId });
+  //   } finally {
+  //     setIsDeleting(false);
+  //   }
+  // };
 
   const handleEdit = (row) => {
     setEditItem(row);
@@ -93,83 +129,12 @@ export default function MasterData() {
     setIsDrawerOpen(true);
   };
 
-  const handleDataChange = (newData) => {
-    // Replace only the filtered items in the main data array
-    const newDataIds = newData.map(item => item.id);
-    const unchangedData = allCategoryData.filter(item => !newDataIds.includes(item.id));
-    setAllCategoryData([...unchangedData, ...newData]);
-    setHasOrderChanged(true);
-  };
-
-  const handleSaveOrder = async () => {
-    if (!displayData.length) return;
-    
-    const ids = displayData.map(item => item.id);
-
-    setIsSavingOrder(true);
-    const toastId = toast.loading('Saving order...');
-    try {
-      await masterDataApi.reorder(activeType.value, ids);
-      toast.success('Order saved successfully', { id: toastId });
-      setHasOrderChanged(false);
-      fetchMasterData(); // Refresh to get updated sort_order numbers
-    } catch (error) {
-      toast.error('Failed to save order', { id: toastId });
-    } finally {
-      setIsSavingOrder(false);
-    }
-  };
-
   const columns = useMemo(
     () => [
-      {
-        id: 'drag',
-        header: '',
-        cell: () => null, 
-      },
       {
         accessorKey: 'name',
         header: 'Name',
         cell: (info) => <span className="font-medium text-slate-800">{info.getValue()}</span>,
-      },
-      /*
-      {
-        accessorKey: 'parent_id',
-        header: 'Parent',
-        cell: (info) => {
-          const parent = info.getValue();
-          return parent ? <span className="px-2 py-1 bg-slate-100 rounded text-xs">{parent.name || parent}</span> : <span className="text-slate-300">-</span>;
-        },
-      },
-      */
-      {
-        accessorKey: 'is_active',
-        header: 'Status',
-        cell: (info) => {
-          const isActive = info.getValue();
-          return (
-            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-              isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-            }`}>
-              {isActive ? 'Active' : 'Inactive'}
-            </span>
-          );
-        },
-      },
-      {
-        accessorKey: 'created_at',
-        header: 'Created',
-        cell: (info) => {
-          const val = info.getValue();
-          if (!val) return <span className="text-sm text-slate-400">-</span>;
-          const date = new Date(val);
-          if (isNaN(date.getTime())) return <span className="text-sm text-slate-400">-</span>;
-          return (
-            <span className="text-sm text-slate-600">
-              {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
-          );
-        },
       },
       {
         id: 'actions',
@@ -181,90 +146,63 @@ export default function MasterData() {
   );
 
   return (
-    <div className="animate-in fade-in duration-300 h-full flex flex-col">
+    <div className="animate-in fade-in duration-300 w-full">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Master Data</h1>
-          <p className="text-slate-500 mt-1">Manage all categories, types, and hierarchical values.</p>
+          <h1 className="text-2xl font-bold text-slate-900">{activeType.name}</h1>
         </div>
       </div>
       
-      <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 min-h-0">
-        {/* Left Panel: Categories */}
-        <div className="w-full md:w-64 flex-shrink-0 flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm max-h-[35vh] md:max-h-full">
-          <div className="p-3 md:p-4 border-b border-slate-200 bg-slate-50 shrink-0">
-            <h2 className="font-semibold text-slate-700">Categories</h2>
-          </div>
-          <div className="flex-1 overflow-y-auto p-2">
-            {MASTER_DATA_CATEGORIES.map(category => {
-              const isExpanded = expandedCategories.includes(category.name);
-              return (
-                <div key={category.name} className="mb-2">
-                  <button
-                    onClick={() => {
-                      if (isExpanded) {
-                        setExpandedCategories(expandedCategories.filter(c => c !== category.name));
-                      } else {
-                        setExpandedCategories([...expandedCategories, category.name]);
-                      }
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-lg font-medium text-slate-700 hover:bg-slate-100 transition-colors"
-                  >
-                    <span className="text-sm">{category.name}</span>
-                    {isExpanded ? <ChevronDown className="w-4 h-4 text-slate-400" /> : <ChevronRight className="w-4 h-4 text-slate-400" />}
-                  </button>
-                  
-                  {isExpanded && (
-                    <div className="mt-1 ml-2 pl-2 border-l-2 border-slate-100 space-y-1">
-                      {category.types.map(type => (
-                        <div
-                          key={type.value}
-                          onClick={() => {
-                            setActiveCategory(category);
-                            setActiveType(type);
-                          }}
-                          className={`p-2.5 rounded-lg cursor-pointer text-sm font-medium transition-colors ${
-                            activeType.value === type.value 
-                              ? 'bg-primary-50 text-primary-600' 
-                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                          }`}
-                        >
-                          {type.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      <div className="w-full">
+        {/* Main Panel: Data Table */}
+        <div className="w-full bg-white border border-slate-200 rounded-xl shadow-sm">
+           <div className="p-3 md:p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-3 rounded-t-xl">
+             <div className="flex flex-1 gap-3 items-center flex-wrap">
+               <div className="min-w-[200px] max-w-sm relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    value={globalFilter ?? ''}
+                    onChange={e => setGlobalFilter(e.target.value)}
+                    placeholder="Search in all columns..."
+                    className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-colors"
+                  />
+               </div>
 
-        {/* Right Panel: Data Table */}
-        <div className="flex-1 flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm min-h-[50vh] md:min-h-0">
-           <div className="p-3 md:p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3">
-              <h2 className="font-semibold text-slate-700">{activeType.name}</h2>
-              {hasOrderChanged && (
-                <button
-                  onClick={handleSaveOrder}
-                  disabled={isSavingOrder}
-                  className="flex items-center gap-2 px-3 py-1 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg text-sm font-medium transition-colors animate-pulse-slow"
-                >
-                  <Save className="w-4 h-4" />
-                  Save Order
-                </button>
-              )}
-            </div>
+               {(activeType.value === 'states' || activeType.value === 'cities') && (
+                 <div className="w-[200px]">
+                   <CustomSelect
+                     id="country-filter"
+                     value={selectedCountryId}
+                     onChange={setSelectedCountryId}
+                     placeholder="Select Country"
+                     options={countries.map(c => ({ value: c.id, label: c.name }))}
+                   />
+                 </div>
+               )}
+
+               {activeType.value === 'cities' && (
+                 <div className="w-[200px]">
+                   <CustomSelect
+                     id="state-filter"
+                     value={selectedStateId}
+                     onChange={setSelectedStateId}
+                     placeholder="Select State"
+                     options={states.map(s => ({ value: s.id, label: s.name }))}
+                     disabled={!selectedCountryId}
+                   />
+                 </div>
+               )}
+             </div>
             
             <button 
               onClick={handleAddNew}
-              className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm">
+              disabled={(activeType.value === 'states' && !selectedCountryId) || (activeType.value === 'cities' && !selectedStateId)}
+              className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
               + Add New
             </button>
           </div>
           
-          <div className="flex-1 overflow-y-auto relative bg-slate-50/30">
+          <div className="relative bg-slate-50/30 min-h-[200px] rounded-b-xl">
             {isLoading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400 bg-white/50 backdrop-blur-sm z-10">
                 <Loader2 className="w-8 h-8 animate-spin mb-2" />
@@ -274,18 +212,21 @@ export default function MasterData() {
               <div className="absolute inset-0 flex items-center justify-center p-6">
                 <div className="text-center max-w-md">
                   <h3 className="text-lg font-semibold text-slate-700">No Data Available</h3>
-                  <p className="text-slate-500 mt-2 text-sm">Add a new entry for {activeType.name} to get started.</p>
+                  <p className="text-slate-500 mt-2 text-sm">
+                    {(activeType.value === 'states' && !selectedCountryId) ? 'Please select a Country first.'
+                    : (activeType.value === 'cities' && !selectedStateId) ? 'Please select a Country and State first.'
+                    : `Add a new entry for ${activeType.name} to get started.`}
+                  </p>
                 </div>
               </div>
             ) : (
               <MasterTable 
                 data={displayData} 
                 columns={columns}
-                onDataChange={handleDataChange}
-                onSaveOrder={handleSaveOrder}
                 onEdit={handleEdit}
-                onToggleStatus={handleToggleStatus}
-                onDelete={handleDeleteClick}
+                // onDelete={handleDeleteClick}
+                globalFilter={globalFilter}
+                setGlobalFilter={setGlobalFilter}
               />
             )}
           </div>
@@ -298,18 +239,14 @@ export default function MasterData() {
           setIsDrawerOpen(false);
           setEditItem(null);
         }} 
-        category={activeCategory.value}
         type={activeType.value} 
         editData={editItem}
         onSuccess={fetchMasterData}
-        parentOptions={
-          activeType.value === 'state' ? allCategoryData.filter(i => i.type === 'country') :
-          activeType.value === 'city' ? allCategoryData.filter(i => i.type === 'state') :
-          []
-        }
+        parentOptions={activeType.value === 'states' ? countries : activeType.value === 'cities' ? states : []}
+        defaultParentId={activeType.value === 'states' ? selectedCountryId : activeType.value === 'cities' ? selectedStateId : ''}
       />
 
-      <ConfirmModal
+      {/* <ConfirmModal
         isOpen={!!deleteItem}
         onClose={() => setDeleteItem(null)}
         onConfirm={handleConfirmDelete}
@@ -317,7 +254,7 @@ export default function MasterData() {
         title="Delete Master Data"
         message={`Are you sure you want to delete "${deleteItem?.name}"? This will permanently remove it from the system.`}
         confirmText="Delete Entry"
-      />
+      /> */}
     </div>
   );
 }
