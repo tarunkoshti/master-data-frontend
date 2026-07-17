@@ -35,20 +35,33 @@ export default function MasterData() {
 
   const [selectedCountryId, setSelectedCountryId] = useState('');
   const [selectedStateId, setSelectedStateId] = useState('');
+  const [selectedReligionId, setSelectedReligionId] = useState('');
+  const [selectedCommunityId, setSelectedCommunityId] = useState('');
   const [countries, setCountries] = useState([]);
   const [states, setStates] = useState([]);
+  const [religions, setReligions] = useState([]);
+  const [communities, setCommunities] = useState([]);
 
   // Reset filters when type changes
   useEffect(() => {
     setSelectedCountryId('');
     setSelectedStateId('');
+    setSelectedReligionId('');
+    setSelectedCommunityId('');
     setGlobalFilter('');
   }, [activeType.value]);
 
-  // Fetch parent filters (Countries and States)
   useEffect(() => {
     if (activeType.value === 'states' || activeType.value === 'cities') {
       masterDataApi.getByType('countries').then(res => setCountries(res.data || []));
+    }
+    if (activeType.value === 'community') {
+      masterDataApi.getByType('religion').then(res => setReligions(res.data || []));
+    }
+    if (activeType.value === 'subcastes' || activeType.value === 'gotras') {
+      masterDataApi.getByType('community').then(res => {
+        setCommunities(res.data || []);
+      });
     }
   }, [activeType.value]);
 
@@ -73,12 +86,22 @@ export default function MasterData() {
       setDisplayData([]);
       return;
     }
+    if (activeType.value === 'community' && !selectedReligionId) {
+      setDisplayData([]);
+      return;
+    }
+    if ((activeType.value === 'subcastes' || activeType.value === 'gotras') && !selectedCommunityId) {
+      setDisplayData([]);
+      return;
+    }
 
     setIsLoading(true);
     try {
       const params = {};
       if (activeType.value === 'states') params.parent_id = selectedCountryId;
       if (activeType.value === 'cities') params.parent_id = selectedStateId;
+      if (activeType.value === 'community') params.parent_id = selectedReligionId;
+      if (activeType.value === 'subcastes' || activeType.value === 'gotras') params.parent_id = selectedCommunityId;
 
       const response = await masterDataApi.getByType(activeType.value, params);
       setDisplayData(response.data || []);
@@ -92,7 +115,7 @@ export default function MasterData() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeType.value, selectedCountryId, selectedStateId]);
+  }, [activeType.value, selectedCountryId, selectedStateId, selectedReligionId, selectedCommunityId]);
 
   useEffect(() => {
     fetchMasterData();
@@ -192,11 +215,35 @@ export default function MasterData() {
                    />
                  </div>
                )}
+
+               {activeType.value === 'community' && (
+                 <div className="w-[200px]">
+                   <CustomSelect
+                     id="religion-filter"
+                     value={selectedReligionId}
+                     onChange={setSelectedReligionId}
+                     placeholder="Select Religion"
+                     options={religions.map(r => ({ value: r.id, label: r.name }))}
+                   />
+                 </div>
+               )}
+
+               {(activeType.value === 'subcastes' || activeType.value === 'gotras') && (
+                 <div className="w-[200px]">
+                   <CustomSelect
+                     id="community-filter"
+                     value={selectedCommunityId}
+                     onChange={setSelectedCommunityId}
+                     placeholder="Select Community"
+                     options={communities.map(c => ({ value: c.id, label: c.name }))}
+                   />
+                 </div>
+               )}
              </div>
             
             <button 
               onClick={handleAddNew}
-              disabled={(activeType.value === 'states' && !selectedCountryId) || (activeType.value === 'cities' && !selectedStateId)}
+              disabled={(activeType.value === 'states' && !selectedCountryId) || (activeType.value === 'cities' && !selectedStateId) || (activeType.value === 'community' && !selectedReligionId) || ((activeType.value === 'subcastes' || activeType.value === 'gotras') && !selectedCommunityId)}
               className="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
               + Add New
             </button>
@@ -215,6 +262,8 @@ export default function MasterData() {
                   <p className="text-slate-500 mt-2 text-sm">
                     {(activeType.value === 'states' && !selectedCountryId) ? 'Please select a Country first.'
                     : (activeType.value === 'cities' && !selectedStateId) ? 'Please select a Country and State first.'
+                    : (activeType.value === 'community' && !selectedReligionId) ? 'Please select a Religion first.'
+                    : ((activeType.value === 'subcastes' || activeType.value === 'gotras') && !selectedCommunityId) ? 'Please select a Community first.'
                     : `Add a new entry for ${activeType.name} to get started.`}
                   </p>
                 </div>
@@ -242,8 +291,8 @@ export default function MasterData() {
         type={activeType.value} 
         editData={editItem}
         onSuccess={fetchMasterData}
-        parentOptions={activeType.value === 'states' ? countries : activeType.value === 'cities' ? states : []}
-        defaultParentId={activeType.value === 'states' ? selectedCountryId : activeType.value === 'cities' ? selectedStateId : ''}
+        parentOptions={activeType.value === 'states' ? countries : activeType.value === 'cities' ? states : activeType.value === 'community' ? religions : (activeType.value === 'subcastes' || activeType.value === 'gotras') ? communities : []}
+        defaultParentId={activeType.value === 'states' ? selectedCountryId : activeType.value === 'cities' ? selectedStateId : activeType.value === 'community' ? selectedReligionId : (activeType.value === 'subcastes' || activeType.value === 'gotras') ? selectedCommunityId : ''}
       />
 
       {/* <ConfirmModal

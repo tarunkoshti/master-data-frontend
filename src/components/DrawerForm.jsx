@@ -17,7 +17,7 @@ export default function DrawerForm({ isOpen, onClose, type, editData, onSuccess,
       reset({
         name: editData?.name || '',
         value: editData?.value || '',
-        parent_id: editData?.parent_id || editData?.country_id || editData?.state_id || defaultParentId,
+        parent_id: editData?.parent_id || editData?.country_id || editData?.state_id || editData?.religion_id || editData?.community_id || defaultParentId,
         status: editData?.is_active === false ? 'inactive' : 'active',
       });
     }
@@ -103,7 +103,7 @@ export default function DrawerForm({ isOpen, onClose, type, editData, onSuccess,
               {parentOptions.length > 0 && (
                 <div className="flex flex-col space-y-1.5 w-full">
                   <label htmlFor="parent_id" className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                    Select {type === 'states' ? 'Country' : type === 'cities' ? 'State' : 'Parent'}
+                    Select {type === 'states' ? 'Country' : type === 'cities' ? 'State' : type === 'community' ? 'Religion' : (type === 'subcastes' || type === 'gotras') ? 'Community' : 'Parent'}
                     <span className="text-rose-500 ml-1 font-bold">*</span>
                   </label>
                   <Controller
@@ -116,7 +116,7 @@ export default function DrawerForm({ isOpen, onClose, type, editData, onSuccess,
                         value={field.value}
                         onChange={field.onChange}
                         error={errors.parent_id?.message}
-                        placeholder={`Choose a ${type === 'states' ? 'country' : type === 'cities' ? 'state' : 'parent'}...`}
+                        placeholder={`Choose a ${type === 'states' ? 'country' : type === 'cities' ? 'state' : type === 'community' ? 'religion' : (type === 'subcastes' || type === 'gotras') ? 'community' : 'parent'}...`}
                         options={parentOptions.map(opt => ({ value: opt.id, label: opt.name }))}
                       />
                     )}

@@ -25,6 +25,8 @@ export const MASTER_DATA_CATEGORIES = [
     name: 'Religious & Horoscope',
     value: 'religious-horoscope',
     types: [
+      { name: 'Religions', value: 'religion' },
+      { name: 'Communities', value: 'community' },
       { name: 'Mother Tongues', value: 'mother_tongues' },
       { name: 'Zodiacs (Rashi)', value: 'zodiacs' },
       { name: 'Manglik Status', value: 'manglik_status' },
@@ -50,6 +52,9 @@ export const MASTER_DATA_CATEGORIES = [
       { name: 'House', value: 'house' },
       { name: 'Car', value: 'car' },
       { name: 'Relations', value: 'relations' },
+      { name: 'Family Status', value: 'family_status' },
+      { name: 'Family Type', value: 'family_type' },
+      { name: 'Family Values', value: 'family_values' },
     ]
   }
 ];
