@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LoginPage from './pages/LoginPage';
 import DashboardLayout from './layouts/DashboardLayout';
 import MasterData from './pages/MasterData';
+import UserIntros from './pages/UserIntros';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardLayout />}>
               <Route index element={<MasterData />} />
+              <Route path="user-intros" element={<UserIntros />} />
               <Route path=":type" element={<MasterData />} />
             </Route>
           </Route>
