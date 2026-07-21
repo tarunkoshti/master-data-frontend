@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { Database, ShieldCheck, X, ChevronDown, ChevronRight, Video } from 'lucide-react';
+import { Database, ShieldCheck, X, ChevronDown, ChevronRight, Video, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { MASTER_DATA_CATEGORIES } from '../constants/masterData';
 
@@ -110,6 +110,17 @@ export default function Sidebar({ isOpen, onClose }) {
         >
           <Video className="w-5 h-5 mr-3" />
           User Intros
+        </NavLink>
+
+        <NavLink
+          to="/success-stories"
+          onClick={() => {
+            if (window.innerWidth < 768) onClose();
+          }}
+          className={({ isActive }) => `flex items-center w-full px-3 py-2.5 rounded-lg font-medium transition-colors mt-1 ${isActive ? 'bg-primary-50 text-primary-600' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}`}
+        >
+          <Award className="w-5 h-5 mr-3" />
+          Success Stories
         </NavLink>
       </div>
     </aside>
