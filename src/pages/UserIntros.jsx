@@ -18,11 +18,12 @@ export default function UserIntros() {
   const [rejectModalState, setRejectModalState] = useState({ isOpen: false, introId: null, reason: '' });
   const [viewReasonModal, setViewReasonModal] = useState({ isOpen: false, text: '' });
   const [paginationData, setPaginationData] = useState(null);
+  const [pageCursors, setPageCursors] = useState({});
   const [statusFilter, setStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const { page, limit, handlePageChange } = usePagination(1, 10);
+  const { page, limit, handlePageChange } = usePagination(1, 20);
 
   // Reset page to 1 when search query changes
   useEffect(() => {
@@ -33,17 +34,22 @@ export default function UserIntros() {
     setIsLoading(true);
     try {
       const response = await userIntroApi.getAll({
-        sortBy: sortConfig.sortBy,
-        sortOrder: sortConfig.sortOrder,
-        page,
-        limit,
+        last_id: page > 1 ? pageCursors[page] : 0,
         status: statusFilter || undefined,
-        search: debouncedSearchQuery || undefined
+        search: debouncedSearchQuery || undefined,
+        sortBy: sortConfig.sortBy,
+        sortOrder: sortConfig.sortOrder
       });
       const resData = response.data;
       if (resData && resData.data) {
         setData(resData.data);
         setPaginationData(resData.pagination);
+        if (resData.data.length > 0) {
+          setPageCursors(prev => ({
+            ...prev,
+            [page + 1]: resData.data[resData.data.length - 1].id
+          }));
+        }
       } else {
         setData([]);
         setPaginationData(null);

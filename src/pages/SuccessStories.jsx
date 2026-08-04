@@ -20,12 +20,13 @@ export default function SuccessStories() {
   const [deleteConfirmModal, setDeleteConfirmModal] = useState({ isOpen: false, storyId: null });
   const [viewReasonModal, setViewReasonModal] = useState({ isOpen: false, text: '' });
   const [paginationData, setPaginationData] = useState(null);
+  const [pageCursors, setPageCursors] = useState({});
   const [statusFilter, setStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isExporting, setIsExporting] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
-  const { page, limit, handlePageChange } = usePagination(1, 10);
+  const { page, limit, handlePageChange } = usePagination(1, 20);
 
   useEffect(() => {
     handlePageChange(1);
@@ -35,8 +36,7 @@ export default function SuccessStories() {
     setIsLoading(true);
     try {
       const response = await successStoryApi.getAll({
-        page,
-        limit,
+        last_id: page > 1 ? pageCursors[page] : 0,
         sortBy: sortConfig.sortBy,
         sortOrder: sortConfig.sortOrder,
         status: statusFilter || undefined,
@@ -46,6 +46,12 @@ export default function SuccessStories() {
       if (resData && resData.data) {
         setData(resData.data);
         setPaginationData(resData.pagination);
+        if (resData.data.length > 0) {
+          setPageCursors(prev => ({
+            ...prev,
+            [page + 1]: resData.data[resData.data.length - 1].id
+          }));
+        }
       } else {
         setData([]);
         setPaginationData(null);
@@ -100,10 +106,10 @@ export default function SuccessStories() {
       };
 
       const response = await successStoryApi.export(params);
-      
+
       const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
-      
+
       const dateStr = new Date().toISOString().split('T')[0];
       const filename = `success-stories-${statusFilter || 'all'}-${dateStr}.xlsx`;
 
