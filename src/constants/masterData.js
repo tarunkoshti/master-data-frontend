@@ -56,5 +56,12 @@ export const MASTER_DATA_CATEGORIES = [
       { name: 'Family Type', value: 'family_type' },
       { name: 'Family Values', value: 'family_values' },
     ]
+  },
+  {
+    name: 'Profile Management',
+    value: 'profile-management',
+    types: [
+      { name: 'Deletion Profile Reasons', value: 'deletion_profile_reasons' }
+    ]
   }
 ];

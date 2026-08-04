@@ -5,11 +5,13 @@ export default function TableFilters({
   searchQuery,
   onSearchChange,
   placeholder = "Search...",
-  children // For custom filters like Status dropdown
+  children, // For custom filters like Status dropdown
+  actions // For buttons like Export
 }) {
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
-      <div className="relative w-full sm:max-w-xs">
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto flex-1">
+        <div className="relative w-full sm:max-w-xs">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           type="text"
@@ -23,6 +25,12 @@ export default function TableFilters({
       {children && (
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
           {children}
+        </div>
+      )}
+    </div>
+      {actions && (
+        <div className="flex items-center gap-3 shrink-0">
+          {actions}
         </div>
       )}
     </div>

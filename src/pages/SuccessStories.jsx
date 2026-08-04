@@ -22,6 +22,7 @@ export default function SuccessStories() {
   const [paginationData, setPaginationData] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const { page, limit, handlePageChange } = usePagination(1, 10);
@@ -84,6 +85,41 @@ export default function SuccessStories() {
       toast.error(error.response?.data?.message || 'Failed to update status', { id: toastId });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    const toastId = toast.loading('Generating Excel file...');
+    try {
+      const params = {
+        status: statusFilter,
+        search: debouncedSearchQuery,
+        sortBy: sortConfig.sortBy,
+        sortOrder: sortConfig.sortOrder
+      };
+
+      const response = await successStoryApi.export(params);
+      
+      const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `success-stories-${statusFilter || 'all'}-${dateStr}.xlsx`;
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Export completed successfully', { id: toastId });
+    } catch (error) {
+      toast.error('Failed to export data', { id: toastId });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -184,7 +220,17 @@ export default function SuccessStories() {
           onSearchChange={(val) => {
             setSearchQuery(val);
           }}
-          placeholder="Search by Profile ID or Mobile..."
+          placeholder="Search by Profile ID or App ID..."
+          actions={
+            <button
+              onClick={handleExport}
+              disabled={isExporting}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 font-medium whitespace-nowrap"
+            >
+              {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+              <span>Export Excel</span>
+            </button>
+          }
         >
           <div className="w-56">
             <CustomSelect
